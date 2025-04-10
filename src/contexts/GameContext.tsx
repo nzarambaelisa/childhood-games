@@ -1,91 +1,64 @@
-import React, { createContext, useContext, useState } from 'react';
-import SnakeGame from '../components/SnakeGame';
-import Tetris from '../components/games/Tetris';
-import Pong from '../components/games/Pong';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-interface Game {
+interface GamePlayers {
+  min: number;
+  max: number;
+}
+
+export interface Game {
   id: string;
   name: string;
   description: string;
   thumbnail: string;
   category: string;
-  hasMultiplayer: boolean;
-  players: {
-    min: number;
-    max: number;
-  };
-  component: React.ComponentType<any>;
+  players: GamePlayers;
 }
 
 interface GameContextType {
   games: Game[];
-  currentGame: Game | null;
+  currentGameId: string | null;
   setCurrentGame: (gameId: string) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
-// Initial games registry
-const availableGames: Game[] = [
+const initialGames: Game[] = [
+  {
+    id: 'tic-tac-toe',
+    name: 'Tic Tac Toe',
+    description: 'Classic game of X\'s and O\'s. Be the first to get three in a row!',
+    thumbnail: '/images/games/tic-tac-toe.jpg',
+    category: 'Strategy',
+    players: { min: 2, max: 2 },
+  },
+  {
+    id: 'memory',
+    name: 'Memory Match',
+    description: 'Test your memory by matching pairs of cards. Find all matches to win!',
+    thumbnail: '/images/games/memory.jpg',
+    category: 'Memory',
+    players: { min: 1, max: 4 },
+  },
   {
     id: 'snake',
     name: 'Snake',
-    description: 'Classic snake game with a multiplayer twist',
-    thumbnail: '/images/games/snake.png',
-    category: 'arcade',
-    hasMultiplayer: true,
-    players: {
-      min: 1,
-      max: 4
-    },
-    component: SnakeGame
+    description: 'Guide the snake to eat food and grow longer, but don\'t hit the walls or yourself!',
+    thumbnail: '/images/games/snake.jpg',
+    category: 'Arcade',
+    players: { min: 1, max: 1 },
   },
-  {
-    id: 'tetris',
-    name: 'Tetris',
-    description: 'The classic block-stacking puzzle game',
-    thumbnail: '/images/games/tetris.png',
-    category: 'puzzle',
-    hasMultiplayer: false,
-    players: {
-      min: 1,
-      max: 1
-    },
-    component: Tetris
-  },
-  {
-    id: 'pong',
-    name: 'Pong',
-    description: 'The original multiplayer arcade game',
-    thumbnail: '/images/games/pong.png',
-    category: 'sports',
-    hasMultiplayer: true,
-    players: {
-      min: 1,
-      max: 2
-    },
-    component: Pong
-  }
 ];
 
-export const GameProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
-  const [games] = useState<Game[]>(availableGames);
-  const [currentGame, setCurrentGame] = useState<Game | null>(null);
+export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [currentGameId, setCurrentGameId] = useState<string | null>(null);
 
-  const selectGame = (gameId: string) => {
-    const game = games.find(g => g.id === gameId) || null;
-    setCurrentGame(game);
+  const value = {
+    games: initialGames,
+    currentGameId,
+    setCurrentGame: setCurrentGameId,
   };
 
-  return (
-    <GameContext.Provider value={{
-      games,
-      currentGame,
-      setCurrentGame: selectGame,
-    }}>
-      {children}
-    </GameContext.Provider>
-  );
+  return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
 };
 
 export const useGameContext = () => {
